@@ -65,10 +65,10 @@ dependencies {
     androidTestImplementation "androidx.compose.ui:ui-test-junit4:$compose_version"
     debugImplementation "androidx.compose.ui:ui-tooling:$compose_version"
 
-    //FireBase
+    //Firebase
     implementation 'com.google.firebase:firebase-auth-ktx:21.0.1'
     implementation 'com.google.firebase:firebase-analytics-ktx:19.0.0'
 
     //Lottie
-    implementation 'com.airbnb.android.lottie:4.1.0'
+    implementation 'com.airbnb.android:lottie:4.1.0'
 }
