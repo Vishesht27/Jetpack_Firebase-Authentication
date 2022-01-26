@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "866644651982",
+    "project_id": "otpcompose-dac5f",
+    "storage_bucket": "otpcompose-dac5f.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:866644651982:android:3f12a39bf65882e25d059f",
+        "android_client_info": {
+          "package_name": "com.example.jetpack_firebase_authentication"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "866644651982-u3e4v7vj9uosbh25mjk4eglcd0giq0ki.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.jetpack_firebase_authentication",
+            "certificate_hash": "50633846f749bc87c0e398f22e9d22018423d8bb"
+          }
+        },
+        {
+          "client_id": "866644651982-dh6ji55s1pr2jsajsv84f4qlcqp6frmh.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBnEkP0j0XgamFY-NCVvankaw63MnojK98"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "866644651982-dh6ji55s1pr2jsajsv84f4qlcqp6frmh.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

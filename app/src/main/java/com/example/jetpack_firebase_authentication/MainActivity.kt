@@ -33,6 +33,11 @@ import com.example.jetpack_firebase_authentication.ui.theme.Purple500
 import com.google.firebase.auth.FirebaseAuth
 import com.airbnb.lottie.LottieAnimationView
 import com.airbnb.lottie.LottieDrawable
+import com.google.firebase.FirebaseException
+import com.google.firebase.auth.PhoneAuthCredential
+import com.google.firebase.auth.PhoneAuthOptions
+import com.google.firebase.auth.PhoneAuthProvider
+import java.util.concurrent.TimeUnit
 
 
 class MainActivity : ComponentActivity() {
@@ -46,20 +51,76 @@ class MainActivity : ComponentActivity() {
             Jetpack_FirebaseAuthenticationTheme {
                 // A surface container using the 'background' color from the theme
                 Surface(color = MaterialTheme.colors.background) {
-                   OTPScreen()
+                    OTPScreen { mobileNum, otp ->
+                        if(mobileNum.isNotEmpty()){
+                            send(mobileNum)
+                        }
+                        if(otp.isNotEmpty()){
+                            otpVerification(otp)
+                        }
+                    }
                 }
             }
         }
     }
+
+    val turnOffPhoneVerify = FirebaseAuth.getInstance().firebaseAuthSettings
+        .setAppVerificationDisabledForTesting(false)
+
+    private fun send(mobileNum: String) {
+        val options = PhoneAuthOptions.newBuilder(mAuth)
+            .setPhoneNumber("+91$mobileNum")
+            .setTimeout(60L, TimeUnit.SECONDS)
+            .setActivity(this)
+            .setCallbacks(object :
+                PhoneAuthProvider.OnVerificationStateChangedCallbacks() {
+                override fun onVerificationCompleted(p0: PhoneAuthCredential) {
+                    Toast.makeText(applicationContext, "Verification Completed", Toast.LENGTH_SHORT)
+                        .show()
+                }
+
+                override fun onVerificationFailed(p0: FirebaseException) {
+                    Toast.makeText(applicationContext, "Verification Failed", Toast.LENGTH_SHORT)
+                        .show()
+                }
+
+                override fun onCodeSent(otp: String, p1: PhoneAuthProvider.ForceResendingToken) {
+                    super.onCodeSent(otp, p1)
+                    verificationOtp = otp
+                    Toast.makeText(applicationContext, "Otp Send Successfully", Toast.LENGTH_SHORT)
+                        .show()
+                }
+            }).build()
+        PhoneAuthProvider.verifyPhoneNumber(options)
+    }
+
+
+    private fun otpVerification(otp: String) {
+        val credential = PhoneAuthProvider.getCredential(verificationOtp, otp)
+        FirebaseAuth.getInstance().signInWithCredential(credential)
+            .addOnCompleteListener(this) { task ->
+                if (task.isSuccessful) {
+                    Toast.makeText(
+                        applicationContext,
+                        "Verification Successful",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                } else {
+                    Toast.makeText(applicationContext, "Wrong Otp", Toast.LENGTH_SHORT).show()
+                }
+            }
+    }
 }
 
-@Preview
+
 @Composable
-fun OTPScreen() {
+fun OTPScreen(
+    onClick: (mobileNum: String, otp: String) -> Unit
+) {
     val context = LocalContext.current
-    var otpVal: String?=null
-    val phoneNumber = remember{ mutableStateOf("")}
-    val customView = remember{ LottieAnimationView(context) }
+    var otpVal: String? = null
+    val phoneNumber = remember { mutableStateOf("") }
+    val customView = remember { LottieAnimationView(context) }
 
     Column(
         modifier = Modifier
@@ -89,23 +150,24 @@ fun OTPScreen() {
 
             // Add Lottie file
 
-            
-            AndroidView({
-                customView
-            },
+
+            AndroidView(
+                {
+                    customView
+                },
                 modifier = Modifier
                     .width(200.dp)
                     .height(200.dp)
 
-            ){ view ->
-                with(view){
-                    setAnimation()
+            ) { view ->
+                with(view) {
+                    setAnimation(R.raw.phone_number_verify)
                     playAnimation()
                     repeatCount = LottieDrawable.INFINITE
                     foregroundGravity = Gravity.CENTER
                 }
             }
-            
+
 //            Image(
 //                painter = painterResource(id = ),
 //                contentDescription = "OTP Image",
@@ -118,9 +180,9 @@ fun OTPScreen() {
 
             OutlinedTextField(
                 value = phoneNumber.value,
-                onValueChange = {phoneNumber.value=it},
-                label = {Text(text="Phone Number")},
-                leadingIcon = { Icon(Icons.Filled, contentDescription = "Phone Number") },
+                onValueChange = { phoneNumber.value = it },
+                label = { Text(text = "Phone Number") },
+                leadingIcon = { Icon(Icons.Filled.Phone, contentDescription = "Phone Number") },
                 singleLine = true,
                 keyboardOptions = KeyboardOptions.Default.copy(
                     keyboardType = KeyboardType.Number,
@@ -130,11 +192,11 @@ fun OTPScreen() {
             )
 
             Spacer(modifier = Modifier.height(20.dp))
-            
-            
+
+
             Button(
                 onClick = {
-
+                    onClick(phoneNumber.value, "") // Here pass the phone Number value only
                 },
                 modifier = Modifier
                     .fillMaxWidth(0.8f)
@@ -142,9 +204,9 @@ fun OTPScreen() {
                     .clip(RoundedCornerShape(10.dp))
                     .background(Purple500)
             ) {
-                Text(text="Send OTP", fontSize = 15.sp, color = Color.White)
+                Text(text = "Send OTP", fontSize = 15.sp, color = Color.White)
             }
-            
+
             Spacer(modifier = Modifier.height(40.dp))
 
             Text(
@@ -154,18 +216,19 @@ fun OTPScreen() {
             )
             Spacer(modifier = Modifier.height(10.dp))
 
-            OTPTextFields(length = 4)
+            OTPTextFields(length = 6)
             { getOtp ->
                 otpVal = getOtp
             }
 
             Spacer(modifier = Modifier.height(30.dp))
 
-            Button(onClick = {
-                if(otpVal!=null){
-                    Toast.makeText(context,"Please Enter OTP",Toast.LENGTH_SHORT).show()
-                }
-            },
+            Button(
+                onClick = {
+                    if (otpVal != null) {
+                        onClick("", otpVal!!) // Here pass the OTP value only
+                    }
+                },
                 modifier = Modifier
                     .fillMaxWidth(0.8f)
                     .height(45.dp)
@@ -175,7 +238,7 @@ fun OTPScreen() {
                 Text(
                     text = "OTP Verify",
                     fontSize = 15.sp,
-                    color =  Color.White
+                    color = Color.White
                 )
             }
         }
